@@ -18,27 +18,33 @@ voices = engine.getProperty('voices')
 engine.setProperty('rate', 130)
 engine.setProperty('voice', 'english')
 
-known_people = {
-    'fred2.jpg': "Fred Rogers",
-    'tom2.jpg': "Tom Hanks"
-}
+known_people = ["Fred Rogers", "Tom Hanks"]
 
-known_image = face_recognition.load_image_file("fred2.jpg")
-known_encoding = face_recognition.face_encodings(known_image)[0]
+fred = face_recognition.load_image_file("fred.jpg")
+tom = face_recognition.load_image_file("tom.jpg")
+known_encodings = [face_recognition.face_encodings(fred)[0], face_recognition.face_encodings(tom)[0]]
 
-print('Comparing...')
+engine.say("Scanning.")
+engine.runAndWait()
+
+
 while True:
     camera.capture(output, format="rgb")
 
-    face_locations = face.recognition.face_recognition(output)
+    face_locations = face_recognition.face_locations(output)
     print("Found {} faces in image.".format(len(face_locations)))
     face_encodings = face_recognition.face_encodings(output, face_locations)
     for face_encoding in face_encodings:
-          match = face_recognition.compare_faces([known_encoding], face_encoding)
-          if match[0]:
-              engine.say("Hello")
-              engine.runAndWait()
-          else:
+          matches = face_recognition.compare_faces(known_encodings, face_encoding)
+          found = False
+          for index, value in enumerate(matches):
+              if value:
+                  print(value)
+                  engine.say("Hello {}".format(known_people[index]))
+                  engine.runAndWait()
+                  found = True
+
+          if not found:
               print("INTRUDER!")
               engine.say("HALT!")
               engine.say("INTRUDER!")
